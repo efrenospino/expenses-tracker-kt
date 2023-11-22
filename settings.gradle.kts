@@ -9,15 +9,19 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
-dependencyResolutionManagement {
+
+@Suppress("UnstableApiUsage") dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 
 rootProject.name = "Expenses Tracker"
 include(":app")
+include(":data")

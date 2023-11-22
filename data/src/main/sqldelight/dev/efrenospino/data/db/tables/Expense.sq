@@ -1,0 +1,13 @@
+CREATE TABLE expense (
+  id TEXT PRIMARY KEY NOT NULL,
+  summary TEXT NOT NULL,
+  amount REAL NOT NULL,
+  createdAt TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM expense;
+
+insertOrReplace:
+INSERT OR REPLACE INTO expense(id, summary, amount, createdAt)
+VALUES ?;

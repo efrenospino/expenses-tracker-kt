@@ -1,17 +1,26 @@
 package dev.efrenospino.exptracker.data.repositories
 
-import dev.efrenospino.exptracker.data.mappers.asAppModel
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import dev.efrenospino.exptracker.data.mappers.asTable
+import dev.efrenospino.exptracker.data.mappers.expenseToAppModel
 import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.exptracker.data.sources.LocalDatabase
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 
-class ExpensesRepositoryImpl(private val localDatabase: LocalDatabase) :
-    ExpensesRepository {
-    override suspend fun getAllExpenses(): List<Expense> {
-        return localDatabase.expenseQueries.selectAll().executeAsList().map { it.asAppModel() }
+class ExpensesRepositoryImpl(private val db: LocalDatabase) : ExpensesRepository {
+    override suspend fun getAllExpenses(coroutineDispatcher: CoroutineDispatcher): Flow<List<Expense>> {
+        return db.expenseQueries.selectAll(mapper = ::expenseToAppModel)
+            .asFlow()
+            .mapToList(coroutineDispatcher)
+    }
+
+    override suspend fun getExpenseById(expenseId: String): Expense {
+        return db.expenseQueries.selectById(expenseId, ::expenseToAppModel).executeAsOne()
     }
 
     override suspend fun save(expense: Expense) {
-        localDatabase.expenseQueries.insertOrReplace(expense.asTable())
+        db.expenseQueries.insertOrReplace(expense.asTable())
     }
 }

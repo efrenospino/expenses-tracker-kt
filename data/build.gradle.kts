@@ -43,8 +43,11 @@ android {
 
 }
 
+
+
 dependencies {
     implementation(libs.sqldelight)
+    implementation(libs.sqldelight.extensions)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

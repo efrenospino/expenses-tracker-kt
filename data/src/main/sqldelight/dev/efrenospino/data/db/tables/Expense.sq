@@ -8,6 +8,9 @@ CREATE TABLE expense (
 selectAll:
 SELECT * FROM expense;
 
+selectById:
+SELECT * FROM expense WHERE id = ?;
+
 insertOrReplace:
 INSERT OR REPLACE INTO expense(id, summary, amount, createdAt)
 VALUES ?;

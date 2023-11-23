@@ -1,9 +1,10 @@
-package dev.efrenospino.ui.screens
+package dev.efrenospino.ui.screens.expense.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,14 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,54 +30,61 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.ui.R
 import dev.efrenospino.ui.lib.shortName
+import dev.efrenospino.ui.lib.simpleHomeTopAppBar
+import dev.efrenospino.ui.lib.singleActionBottomBar
 import dev.efrenospino.ui.lib.usd
+import dev.efrenospino.ui.nav.NavigationEffect
 import java.time.Month
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewModel, navController: NavHostController) {
     val uiState by viewModel.uiState.collectAsState()
-    HomeWithExpensesList(uiState)
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(Event.OnLoadAllExpenses)
+    }
+
+    NavigationEffect(
+        navigationChannel = viewModel.navigationChannel, navHostController = navController
+    )
+
+    HomeWithExpensesList(uiState = uiState, onEvent = viewModel::onEvent)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeWithExpensesList(uiState: HomeScreenState) {
-    Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(text = "My Expenses")
+private fun HomeWithExpensesList(
+    uiState: HomeScreenState,
+    onEvent: (Event) -> Unit = {},
+) {
+    Scaffold(
+        topBar = simpleHomeTopAppBar(screenTitle = "My Expenses"),
+        bottomBar = singleActionBottomBar(buttonText = "Register New Expense", onClick = {
+            onEvent(Event.OnRegisterNewExpenseButtonClicked)
         })
-    }, bottomBar = {
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            onClick = { /*TODO*/ },
-        ) {
-            Text(text = "Register New Expense")
+    ) { innerPadding ->
+        Box(Modifier.padding(innerPadding)) {
+            HomeScreenScaffoldContent(uiState, onEvent)
         }
-    }) { innerPadding ->
-        HomeScreenScaffoldContent(innerPadding, uiState)
     }
 }
 
 @Composable
 private fun HomeScreenScaffoldContent(
-    innerPadding: PaddingValues,
     uiState: HomeScreenState,
+    onEvent: (Event) -> Unit = {},
 ) {
     Column(
-        Modifier
-            .padding(innerPadding)
-            .fillMaxSize(),
+        Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        MonthExpensesSummary(uiState.thisMonth, uiState.thisMonthSpend)
+        ExpensesSummaryCard(uiState.thisMonth, uiState.thisMonthSpend)
         if (uiState.expensesList.isEmpty()) {
             Spacer(modifier = Modifier.size(100.dp))
             Column(
@@ -99,13 +105,13 @@ private fun HomeScreenScaffoldContent(
             }
         } else {
             Spacer(modifier = Modifier.size(10.dp))
-            ExpensesList(uiState.expensesList)
+            ExpensesList(uiState.expensesList, onEvent)
         }
     }
 }
 
 @Composable
-private fun MonthExpensesSummary(month: Month, spend: Double) {
+private fun ExpensesSummaryCard(month: Month, spend: Double) {
     Card(
         modifier = Modifier
             .fillMaxHeight(0.2F)
@@ -128,32 +134,49 @@ private fun MonthExpensesSummary(month: Month, spend: Double) {
 }
 
 @Composable
-private fun ExpensesList(expensesList: List<Expense>) {
+private fun ExpensesList(
+    expensesList: List<Expense>,
+    onEvent: (Event) -> Unit = {},
+) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(expensesList) {
-            Card(modifier = Modifier.fillMaxWidth(), shape = RectangleShape) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column {
-                        Text(text = it.summary, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = it.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                    Text(
-                        text = it.amount.usd, style = MaterialTheme.typography.headlineSmall
-                    )
-                }
+        items(expensesList) { expense ->
+            ExpenseTile(expense, onEvent)
+        }
+    }
+}
+
+@Composable
+private fun ExpenseTile(
+    expense: Expense,
+    onEvent: (Event) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onEvent(Event.OnExpenseRecordClicked(expense))
+            }, shape = RectangleShape
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column {
+                Text(text = expense.summary, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = expense.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
+            Text(
+                text = expense.amount.usd, style = MaterialTheme.typography.headlineSmall
+            )
         }
     }
 }

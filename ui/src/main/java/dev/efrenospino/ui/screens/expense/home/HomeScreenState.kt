@@ -1,4 +1,4 @@
-package dev.efrenospino.ui.screens
+package dev.efrenospino.ui.screens.expense.home
 
 import dev.efrenospino.exptracker.data.models.Expense
 import java.time.Month

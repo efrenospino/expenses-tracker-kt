@@ -1,4 +1,4 @@
-package dev.efrenospino.ui.lib
+package dev.efrenospino.ui.utils
 
 sealed interface Message {
 

@@ -1,4 +1,4 @@
-package dev.efrenospino.ui.lib
+package dev.efrenospino.ui.utils
 
 import java.text.DecimalFormat
 import java.time.LocalDate
@@ -18,6 +18,27 @@ inline val Month.shortName: String
         TextStyle.SHORT_STANDALONE,
         Locale.US
     )
+
+inline val Month.fullName: String
+    get() = this.getDisplayName(
+        TextStyle.FULL_STANDALONE,
+        Locale.US
+    )
+
+
+fun previousMonth(month: Month, year: Int): Pair<Month, Int> {
+    if (month == Month.JANUARY) {
+        return Pair(Month.DECEMBER, year - 1)
+    }
+    return Pair(Month.of(month.value - 1), year)
+}
+
+fun nextMonth(month: Month, year: Int): Pair<Month, Int> {
+    if (month == Month.DECEMBER) {
+        return Pair(Month.JANUARY, year + 1)
+    }
+    return Pair(Month.of(month.value + 1), year)
+}
 
 inline val ZonedDateTime?.displayName: String
     get() = if (this == null || this.toLocalDate().equals(LocalDate.now(ZoneId.systemDefault()))) {

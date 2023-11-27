@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import dev.efrenospino.domain.usecases.FilterExpensesByMonth
+import dev.efrenospino.domain.usecases.SortExpensesList
 import dev.efrenospino.exptracker.data.repositories.ExpensesRepositoryImpl
 import dev.efrenospino.exptracker.data.sources.LocalDatabase
 import dev.efrenospino.exptracker.ui.theme.ExpensesTrackerTheme
@@ -41,9 +43,12 @@ class MainActivity : ComponentActivity() {
                             viewModel = viewModel {
                                 HomeViewModel(
                                     appNavigator = appNavigator,
-                                    expensesRepository = ExpensesRepositoryImpl(
-                                        LocalDatabase(this@MainActivity)
-                                    )
+                                    filterExpensesByMonth = FilterExpensesByMonth(
+                                        expensesRepository = ExpensesRepositoryImpl(
+                                            LocalDatabase(this@MainActivity)
+                                        )
+                                    ),
+                                    sortExpensesList = SortExpensesList()
                                 )
                             },
                         )

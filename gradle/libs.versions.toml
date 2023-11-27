@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.0-alpha13"
+agp = "8.3.0-alpha14"
 kotlin = "1.9.20"
 coreKtx = "1.12.0"
 junit = "4.13.2"
@@ -10,6 +10,7 @@ activityCompose = "1.8.1"
 composeBom = "2023.10.01"
 sqldelight = "2.0.0"
 androidX = "2.7.5"
+kotlinCoroutines = "1.7.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +30,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 sqldelight-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
 sqldelight = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }
+kotlin-coroutines =  { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

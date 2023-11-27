@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.exptracker.data.repositories.ExpensesRepository
-import dev.efrenospino.ui.lib.Message
+import dev.efrenospino.ui.utils.Message
 import dev.efrenospino.ui.nav.AppNavigator
 import dev.efrenospino.ui.nav.Destination
 import dev.efrenospino.ui.nav.SimpleViewModel
@@ -29,6 +29,12 @@ class ExpenseFormViewModel(
         )
     )
 ) {
+
+    init {
+        if (viewModelState.value.expenseId != null) {
+            onEvent(Event.OnLoadExpenseData)
+        }
+    }
     override fun onEvent(event: Event, coroutineDispatcher: CoroutineDispatcher) {
         when (event) {
             Event.OnNavigateBack -> onNavigateBack()

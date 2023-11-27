@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,17 +21,16 @@ import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.ui.lib.BasicTextField
 import dev.efrenospino.ui.lib.ErrorDialog
 import dev.efrenospino.ui.lib.FullWidthTextField
-import dev.efrenospino.ui.lib.Message
+import dev.efrenospino.ui.utils.Message
 import dev.efrenospino.ui.lib.RetryDialog
-import dev.efrenospino.ui.lib.displayName
-import dev.efrenospino.ui.lib.fmt
+import dev.efrenospino.ui.utils.displayName
+import dev.efrenospino.ui.utils.fmt
 import dev.efrenospino.ui.lib.simpleTopAppBar
 import dev.efrenospino.ui.lib.singleActionBottomBar
-import dev.efrenospino.ui.lib.usd
+import dev.efrenospino.ui.utils.usd
 import dev.efrenospino.ui.nav.NavigationEffect
 import java.time.ZonedDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseFormScreen(
     viewModel: ExpenseFormViewModel,
@@ -41,10 +38,6 @@ fun ExpenseFormScreen(
     screenTitle: String,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(Event.OnLoadExpenseData)
-    }
 
     when (uiState.message) {
         is Message.Error.ExpenseDataNotLoaded -> {

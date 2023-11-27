@@ -12,16 +12,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,13 +43,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import dev.efrenospino.domain.usecases.SortExpensesList
 import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.ui.R
-import dev.efrenospino.ui.lib.shortName
+import dev.efrenospino.ui.lib.ExpensesSortByDropdownMenu
 import dev.efrenospino.ui.lib.simpleHomeTopAppBar
 import dev.efrenospino.ui.lib.singleActionBottomBar
-import dev.efrenospino.ui.lib.usd
 import dev.efrenospino.ui.nav.NavigationEffect
+import dev.efrenospino.ui.utils.fullName
+import dev.efrenospino.ui.utils.shortName
+import dev.efrenospino.ui.utils.usd
 import java.time.Month
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -55,19 +70,22 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavHostController) {
         navigationChannel = viewModel.navigationChannel, navHostController = navController
     )
 
-    HomeWithExpensesList(uiState = uiState, onEvent = viewModel::onEvent)
+    ExpensesHomeScaffold(uiState = uiState, onEvent = viewModel::onEvent)
 }
 
 @Composable
-private fun HomeWithExpensesList(
+private fun ExpensesHomeScaffold(
     uiState: HomeScreenState,
     onEvent: (Event) -> Unit = {},
 ) {
-    Scaffold(
-        topBar = simpleHomeTopAppBar(screenTitle = "My Expenses"),
-        bottomBar = singleActionBottomBar(buttonText = "Register New Expense", onClick = {
-            onEvent(Event.OnRegisterNewExpenseButtonClicked)
-        })
+    Scaffold(topBar = simpleHomeTopAppBar(screenTitle = "My Expenses", actions = {
+        TextButton(onClick = { /*TODO*/ }) {
+            Text(text = uiState.selectedMonth.shortName)
+            Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "Pick Month")
+        }
+    }), bottomBar = singleActionBottomBar(buttonText = "Register New Expense", onClick = {
+        onEvent(Event.OnRegisterNewExpenseButtonClicked)
+    })
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             HomeScreenScaffoldContent(uiState, onEvent)
@@ -81,55 +99,123 @@ private fun HomeScreenScaffoldContent(
     onEvent: (Event) -> Unit = {},
 ) {
     Column(
-        Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ExpensesSummaryCard(uiState.thisMonth, uiState.thisMonthSpend)
+        ExpensesSummaryCard(uiState, onEvent)
+        Spacer(modifier = Modifier.size(10.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            SortByButton(uiState.sortBy, onEvent)
+            OrderByButton(uiState.orderByDescending, onEvent)
+        }
         if (uiState.expensesList.isEmpty()) {
-            Spacer(modifier = Modifier.size(100.dp))
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    modifier = Modifier.fillMaxSize(0.2F),
-                    painter = painterResource(id = R.drawable.baseline_money_off_24),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.tertiary),
-                    alpha = 0.3F,
-                    contentDescription = "Nothing spent yet"
-                )
-                Text(
-                    modifier = Modifier.alpha(alpha = 0.6F),
-                    text = "Nothing spent yet",
-                    style = MaterialTheme.typography.headlineSmall.copy(color = MaterialTheme.colorScheme.tertiary),
-                )
-            }
+            EmptyState()
         } else {
-            Spacer(modifier = Modifier.size(10.dp))
             ExpensesList(uiState.expensesList, onEvent)
         }
     }
 }
 
 @Composable
-private fun ExpensesSummaryCard(month: Month, spend: Double) {
+private fun SortByButton(
+    sortBy: SortExpensesList.SortBy,
+    onEvent: (Event) -> Unit = {},
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.wrapContentSize()) {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_filter_list_24),
+                contentDescription = "Filter"
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExpensesSortByDropdownMenu(sortBy) {
+                onEvent(Event.OnSortByOptionChanged(it))
+                expanded = false
+            }
+        }
+    }
+}
+
+@Composable
+private fun OrderByButton(orderByDescending: Boolean, onEvent: (Event) -> Unit) {
+    IconButton(onClick = {
+        onEvent(Event.OnOrderByOptionChanged(!orderByDescending))
+    }) {
+        val iconToUse =
+            if (orderByDescending) R.drawable.baseline_arrow_downward_24 else R.drawable.baseline_arrow_upward_24
+        Icon(
+            painter = painterResource(id = iconToUse), contentDescription = "Order"
+        )
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Column(
+        Modifier.fillMaxSize(0.8F),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            modifier = Modifier.fillMaxSize(0.2F),
+            painter = painterResource(id = R.drawable.baseline_money_off_24),
+            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.tertiary),
+            alpha = 0.3F,
+            contentDescription = "Nothing spent yet"
+        )
+        Text(
+            modifier = Modifier.alpha(alpha = 0.6F),
+            text = "Nothing spent yet",
+            style = MaterialTheme.typography.headlineSmall.copy(color = MaterialTheme.colorScheme.tertiary),
+        )
+    }
+}
+
+@Composable
+private fun ExpensesSummaryCard(uiState: HomeScreenState, onEvent: (Event) -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxHeight(0.2F)
             .fillMaxWidth(0.9F),
     ) {
-        Column(
+        Row(
             Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Text(
-                text = "This month (${month.shortName})",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                text = spend.usd, style = MaterialTheme.typography.headlineMedium
-            )
+
+            IconButton(onClick = {
+                onEvent(Event.OnGoToPreviousMonthButtonClicked)
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "Prev"
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "${uiState.selectedMonth.fullName} ${uiState.selectedYear}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = uiState.selectedMonthSpend.usd,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                if (uiState.displayGoToCurrentMonth) {
+                    TextButton(onClick = { onEvent(Event.OnGoToCurrentMonthButtonClicked) }) {
+                        Text(text = "Back to ${uiState.currentMonth.fullName} ${uiState.currentYear}")
+                    }
+                }
+            }
+
+            IconButton(enabled = uiState.displayGoToNextMonthButton, onClick = {
+                onEvent(Event.OnGoToNextMonthButtonClicked)
+            }) {
+                Icon(imageVector = Icons.Outlined.KeyboardArrowRight, contentDescription = "Next")
+            }
         }
+
     }
 }
 
@@ -184,8 +270,10 @@ private fun ExpenseTile(
 @Preview
 @Composable
 private fun HomeWithExpensesListPreview() {
-    HomeWithExpensesList(
+    ExpensesHomeScaffold(
         uiState = HomeScreenState(
+            selectedYear = 2023,
+            selectedMonth = Month.NOVEMBER,
             expensesList = listOf(
                 Expense(
                     id = UUID.randomUUID().toString(),
@@ -199,8 +287,6 @@ private fun HomeWithExpensesListPreview() {
                     createdAt = ZonedDateTime.now()
                 )
             ),
-            thisMonth = Month.NOVEMBER,
-            error = null,
         )
     )
 }
@@ -208,11 +294,10 @@ private fun HomeWithExpensesListPreview() {
 @Preview
 @Composable
 private fun HomeWithoutExpensesListPreview() {
-    HomeWithExpensesList(
+    ExpensesHomeScaffold(
         uiState = HomeScreenState(
+            selectedMonth = Month.DECEMBER,
             expensesList = emptyList(),
-            thisMonth = Month.NOVEMBER,
-            error = null,
         )
     )
 }

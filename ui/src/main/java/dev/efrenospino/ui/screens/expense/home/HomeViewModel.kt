@@ -1,39 +1,115 @@
 package dev.efrenospino.ui.screens.expense.home
 
 import androidx.lifecycle.viewModelScope
+import dev.efrenospino.domain.usecases.FilterExpensesByMonth
+import dev.efrenospino.domain.usecases.SortExpensesList
 import dev.efrenospino.exptracker.data.models.Expense
-import dev.efrenospino.exptracker.data.repositories.ExpensesRepository
 import dev.efrenospino.ui.nav.AppNavigator
 import dev.efrenospino.ui.nav.Destination
 import dev.efrenospino.ui.nav.SimpleViewModel
+import dev.efrenospino.ui.utils.nextMonth
+import dev.efrenospino.ui.utils.previousMonth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 
 class HomeViewModel(
-    private val expensesRepository: ExpensesRepository,
+    private val filterExpensesByMonth: FilterExpensesByMonth,
+    private val sortExpensesList: SortExpensesList,
     appNavigator: AppNavigator,
 ) : SimpleViewModel<HomeScreenState, Event>(
     appNavigator = appNavigator,
-    viewModelState = MutableStateFlow(
-        HomeScreenState(
-            expensesList = emptyList(),
-            thisMonth = ZonedDateTime.now().month,
-            error = null,
-        )
-    )
+    viewModelState = MutableStateFlow(HomeScreenState())
 ) {
 
     override fun onEvent(event: Event, coroutineDispatcher: CoroutineDispatcher) {
         when (event) {
-            Event.OnLoadAllExpenses -> onLoadAllExpenses(coroutineDispatcher)
+            Event.OnLoadAllExpenses -> onLoadMonthExpenses(coroutineDispatcher)
             Event.OnRegisterNewExpenseButtonClicked -> onRegisterNewExpenseButtonClicked()
+            Event.OnGoToPreviousMonthButtonClicked -> onGoToPreviousMonth(coroutineDispatcher)
+            Event.OnGoToNextMonthButtonClicked -> onGoToNextMonth(coroutineDispatcher)
+            Event.OnGoToCurrentMonthButtonClicked -> onGoToCurrentMonthAndYear(coroutineDispatcher)
             is Event.OnExpenseRecordClicked -> onExpenseRecordClicked(event.expense)
+            is Event.OnOrderByOptionChanged -> onOrderByOptionChanged(event.orderDescending)
+            is Event.OnSortByOptionChanged -> onSortByOptionChanged(event.sortBy)
         }
+    }
+
+    private fun onOrderByOptionChanged(orderByDescending: Boolean) {
+        viewModelState.update {
+            it.copy(
+                orderByDescending = orderByDescending,
+                expensesList = sortExpensesList(
+                    SortExpensesList.Args(
+                        expensesList = viewModelState.value.expensesList,
+                        sortBy = viewModelState.value.sortBy,
+                        orderDescending = orderByDescending
+                    )
+                )
+            )
+        }
+    }
+
+    private fun onSortByOptionChanged(sortBy: SortExpensesList.SortBy) {
+        viewModelState.update {
+            it.copy(
+                sortBy = sortBy,
+                expensesList = sortExpensesList(
+                    SortExpensesList.Args(
+                        expensesList = viewModelState.value.expensesList,
+                        sortBy = sortBy,
+                        orderDescending = viewModelState.value.orderByDescending
+                    )
+                )
+            )
+        }
+    }
+
+    private fun onGoToCurrentMonthAndYear(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+        viewModelState.update {
+            it.copy(
+                selectedMonth = it.currentMonth,
+                selectedYear = it.currentYear,
+            )
+        }
+        onLoadMonthExpenses(dispatcher)
+    }
+
+    private fun onGoToPreviousMonth(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+
+        val (selectedMonth, selectedYear) = previousMonth(
+            viewModelState.value.selectedMonth,
+            viewModelState.value.selectedYear
+        )
+
+        viewModelState.update {
+            it.copy(
+                selectedMonth = selectedMonth,
+                selectedYear = selectedYear
+            )
+        }
+
+        onLoadMonthExpenses(dispatcher)
+    }
+
+    private fun onGoToNextMonth(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+
+        val (selectedMonth, selectedYear) = nextMonth(
+            viewModelState.value.selectedMonth,
+            viewModelState.value.selectedYear
+        )
+
+        viewModelState.update {
+            it.copy(
+                selectedMonth = selectedMonth,
+                selectedYear = selectedYear
+            )
+        }
+
+        onLoadMonthExpenses(dispatcher)
     }
 
     private fun onExpenseRecordClicked(expense: Expense) {
@@ -44,15 +120,29 @@ class HomeViewModel(
         appNavigator.tryNavigateTo(Destination.NewExpenseDestination())
     }
 
-    private fun onLoadAllExpenses(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+    private fun onLoadMonthExpenses(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
         viewModelScope.launch(dispatcher) {
-            expensesRepository.getAllExpenses(dispatcher).catch { throwable ->
+            filterExpensesByMonth(
+                dispatcher,
+                FilterExpensesByMonth.Args(
+                    uiState.value.selectedMonth,
+                    uiState.value.selectedYear
+                )
+            ).catch { throwable ->
                 viewModelState.update {
                     it.copy(error = throwable)
                 }
             }.collect { data ->
                 viewModelState.update {
-                    it.copy(expensesList = data, error = null)
+                    it.copy(
+                        expensesList = sortExpensesList(
+                            SortExpensesList.Args(
+                                expensesList = data,
+                                sortBy = viewModelState.value.sortBy,
+                                orderDescending = viewModelState.value.orderByDescending
+                            )
+                        ), error = null
+                    )
                 }
             }
         }

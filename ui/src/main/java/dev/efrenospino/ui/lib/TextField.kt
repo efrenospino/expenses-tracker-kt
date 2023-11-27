@@ -16,13 +16,14 @@ import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun BasicTextField(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
     readOnly: Boolean = false,
     onValueChange: (String) -> Unit = {},
 ) {
     OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         value = value,
         readOnly = readOnly,
         colors = OutlinedTextFieldDefaults.colors(
@@ -38,13 +39,14 @@ fun BasicTextField(
 
 @Composable
 fun FullWidthTextField(
+    modifier: Modifier = Modifier,
     value: String,
     placeholder: String,
     keyboardType: KeyboardType = KeyboardType.Decimal,
     onValueChange: (String) -> Unit,
 ) {
     Row(
-        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+        modifier, horizontalArrangement = Arrangement.Center
     ) {
         OutlinedTextField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),

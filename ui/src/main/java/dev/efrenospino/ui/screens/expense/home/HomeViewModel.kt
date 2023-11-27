@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Month
 
 class HomeViewModel(
     private val filterExpensesByMonth: FilterExpensesByMonth,
@@ -35,7 +36,18 @@ class HomeViewModel(
             is Event.OnExpenseRecordClicked -> onExpenseRecordClicked(event.expense)
             is Event.OnOrderByOptionChanged -> onOrderByOptionChanged(event.orderDescending)
             is Event.OnSortByOptionChanged -> onSortByOptionChanged(event.sortBy)
+            is Event.OnYearMonthSetButtonClicked -> onYearMonthSetButtonClicked(coroutineDispatcher, event.month, event.year)
         }
+    }
+
+    private fun onYearMonthSetButtonClicked(dispatcher: CoroutineDispatcher = Dispatchers.IO, month: Month, year: Int) {
+        viewModelState.update {
+            it.copy(
+                selectedMonth = month,
+                selectedYear = year,
+            )
+        }
+        onLoadMonthExpenses(dispatcher)
     }
 
     private fun onOrderByOptionChanged(orderByDescending: Boolean) {

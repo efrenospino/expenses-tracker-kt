@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,14 +22,14 @@ import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.ui.lib.BasicTextField
 import dev.efrenospino.ui.lib.ErrorDialog
 import dev.efrenospino.ui.lib.FullWidthTextField
-import dev.efrenospino.ui.utils.Message
 import dev.efrenospino.ui.lib.RetryDialog
-import dev.efrenospino.ui.utils.displayName
-import dev.efrenospino.ui.utils.fmt
 import dev.efrenospino.ui.lib.simpleTopAppBar
 import dev.efrenospino.ui.lib.singleActionBottomBar
-import dev.efrenospino.ui.utils.usd
 import dev.efrenospino.ui.nav.NavigationEffect
+import dev.efrenospino.ui.utils.Message
+import dev.efrenospino.ui.utils.displayName
+import dev.efrenospino.ui.utils.fmt
+import dev.efrenospino.ui.utils.usd
 import java.time.ZonedDateTime
 
 @Composable
@@ -180,13 +181,23 @@ private fun ExpenseFormFields(
     expenseDate: ZonedDateTime?,
 ) {
     Column(modifier = Modifier.padding(10.dp)) {
-        FullWidthTextField(value = expenseAmount, placeholder = 0.0.usd, onValueChange = {
-            onExpenseAmountChange(it)
-        })
+        FullWidthTextField(
+            Modifier.fillMaxWidth(),
+            value = expenseAmount,
+            placeholder = 0.0.usd,
+            onValueChange = {
+                onExpenseAmountChange(it)
+            })
         BasicTextField(
+            Modifier.fillMaxWidth(),
             label = "Summary", value = expenseSummary, onValueChange = onExpenseSummaryChange
         )
-        BasicTextField(label = "Date", value = expenseDate.displayName, readOnly = true)
+        BasicTextField(
+            Modifier.fillMaxWidth(),
+            label = "Date",
+            value = expenseDate.displayName,
+            readOnly = true
+        )
     }
 }
 

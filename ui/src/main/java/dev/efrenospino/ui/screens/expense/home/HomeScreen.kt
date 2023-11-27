@@ -21,18 +21,21 @@ import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +50,7 @@ import dev.efrenospino.domain.usecases.SortExpensesList
 import dev.efrenospino.exptracker.data.models.Expense
 import dev.efrenospino.ui.R
 import dev.efrenospino.ui.lib.ExpensesSortByDropdownMenu
+import dev.efrenospino.ui.lib.MonthYearBottomSheetPicker
 import dev.efrenospino.ui.lib.simpleHomeTopAppBar
 import dev.efrenospino.ui.lib.singleActionBottomBar
 import dev.efrenospino.ui.nav.NavigationEffect
@@ -73,13 +77,23 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavHostController) {
     ExpensesHomeScaffold(uiState = uiState, onEvent = viewModel::onEvent)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExpensesHomeScaffold(
     uiState: HomeScreenState,
     onEvent: (Event) -> Unit = {},
 ) {
+
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
     Scaffold(topBar = simpleHomeTopAppBar(screenTitle = "My Expenses", actions = {
-        TextButton(onClick = { /*TODO*/ }) {
+        TextButton(
+            onClick = {
+                showBottomSheet = true
+            }
+        ) {
             Text(text = uiState.selectedMonth.shortName)
             Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "Pick Month")
         }
@@ -87,8 +101,26 @@ private fun ExpensesHomeScaffold(
         onEvent(Event.OnRegisterNewExpenseButtonClicked)
     })
     ) { innerPadding ->
+
         Box(Modifier.padding(innerPadding)) {
             HomeScreenScaffoldContent(uiState, onEvent)
+        }
+
+        if (showBottomSheet) {
+            MonthYearBottomSheetPicker(
+                month = uiState.selectedMonth,
+                year = uiState.selectedYear,
+                scope = scope,
+                sheetState = sheetState,
+                onMonthYearSet = { month, year ->
+                    onEvent(
+                        Event.OnYearMonthSetButtonClicked(
+                            month,
+                            year
+                        )
+                    )
+                },
+                onDismissRequest = { showBottomSheet = false })
         }
     }
 }

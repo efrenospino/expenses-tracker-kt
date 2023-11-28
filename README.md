@@ -1,8 +1,14 @@
 # Expenses Tracker KT
 
-ExpensesTracker is an app to track expenses month by month. 
+ExpensesTracker is an app to track expenses month by month.
 
-Written using Kotlin and Jetpack Compose. It's architecture relies in 4 major modules:
+## Tech Stack
+- Kotlin
+- Jetpack Compose
+- SQLDelight
+- 
+
+## Modules
 - app -> config files and navigation
 - ui -> libs, composables and screens
 - domain -> use cases 

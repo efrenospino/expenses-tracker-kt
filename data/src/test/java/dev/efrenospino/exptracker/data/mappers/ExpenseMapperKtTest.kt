@@ -37,7 +37,7 @@ class ExpenseMapperKtTest {
             amount = 100.0,
             createdAt = now
         )
-        val expenseDbObject = dev.efrenospino.data.db.tables.Expense(
+        val expenseDbObject = dev.efrenospino.exptracker.data.db.tables.Expense(
             id = "SomeId",
             summary = "Fancy Expense",
             amount = 100.0,

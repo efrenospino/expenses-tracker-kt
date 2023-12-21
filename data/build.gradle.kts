@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -43,8 +44,6 @@ android {
     }
 
 }
-
-
 
 dependencies {
 

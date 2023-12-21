@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -52,6 +53,14 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    koverReport {
+        filters {
+            excludes {
+                packages("dev.efrenospino.exptracker.data.db.tables")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -59,6 +68,10 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":domain"))
     implementation(project(":ui"))
+
+    kover(project(":data"))
+    kover(project(":domain"))
+    kover(project(":ui"))
 
     implementation(libs.androidx.activity.compose)
 

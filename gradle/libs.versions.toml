@@ -7,6 +7,7 @@ coreKtx = "1.12.0"
 junit = "4.13.2"
 kotlin = "1.9.20"
 kotlinCoroutines = "1.7.3"
+kover = "0.7.5"
 lifecycleRuntimeKtx = "2.6.2"
 mockk = "1.13.8"
 sqldelight = "2.0.0"
@@ -34,5 +35,6 @@ sqldelight-extensions = { group = "app.cash.sqldelight", name = "coroutines-exte
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 

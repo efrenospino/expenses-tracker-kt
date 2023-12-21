@@ -17,8 +17,8 @@ fun expenseToAppModel(
     )
 }
 
-fun dev.efrenospino.exptracker.data.models.Expense.asDbObject(): dev.efrenospino.data.db.tables.Expense {
-    return dev.efrenospino.data.db.tables.Expense(
+fun dev.efrenospino.exptracker.data.models.Expense.asDbObject(): dev.efrenospino.exptracker.data.db.tables.Expense {
+    return dev.efrenospino.exptracker.data.db.tables.Expense(
         id,
         summary,
         amount,

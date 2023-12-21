@@ -1,5 +1,7 @@
 # Expenses Tracker KT
 
+[![codecov](https://codecov.io/gh/efrenospino/expenses-tracker-kt/graph/badge.svg?token=EJZSOVYUJU)](https://codecov.io/gh/efrenospino/expenses-tracker-kt)
+
 ExpensesTracker is an app to track expenses month by month.
 
 ## Tech Stack

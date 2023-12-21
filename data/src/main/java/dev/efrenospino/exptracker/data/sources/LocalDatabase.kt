@@ -3,7 +3,7 @@ package dev.efrenospino.exptracker.data.sources
 import android.content.Context
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import dev.efrenospino.data.db.ExpTrackerDB
+import dev.efrenospino.exptracker.data.db.ExpTrackerDB
 
 class LocalDatabase(context: Context) {
 

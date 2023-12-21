@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.efrenospino.ui"
+    namespace = "dev.efrenospino.exptracker.ui"
     compileSdk = 34
 
     defaultConfig {

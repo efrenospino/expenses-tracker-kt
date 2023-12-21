@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -6,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.efrenospino.exptracker"
+    namespace = "dev.efrenospino.exptracker.data"
     compileSdk = 34
 
     defaultConfig {
@@ -38,7 +37,7 @@ android {
     sqldelight {
         databases {
             create("ExpTrackerDB") {
-                packageName.set("dev.efrenospino.data.db")
+                packageName.set("dev.efrenospino.exptracker.data.db")
             }
         }
     }

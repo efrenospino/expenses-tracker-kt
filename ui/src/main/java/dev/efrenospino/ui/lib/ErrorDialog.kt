@@ -1,6 +1,5 @@
 package dev.efrenospino.ui.lib
 
-import android.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
@@ -37,7 +36,7 @@ fun ErrorDialog(
             TextButton(onClick = {
                 onConfirmation()
             }) {
-                Text(stringResource(id = R.string.ok))
+                Text(stringResource(id = android.R.string.ok))
             }
         },
     )
@@ -68,7 +67,7 @@ fun RetryDialog(
         },
         dismissButton = {
             TextButton(onClick = onCancel) {
-                Text(stringResource(id = R.string.cancel))
+                Text(stringResource(id = android.R.string.cancel))
             }
         },
         confirmButton = {

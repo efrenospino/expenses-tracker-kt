@@ -1,4 +1,4 @@
-package dev.efrenospino.exptracker.ui.theme
+package dev.efrenospino.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
